@@ -1,3 +1,4 @@
+import os
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QThread, QBasicTimer, pyqtSignal
@@ -142,16 +143,36 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             else:
                 self.pushButton_2.setEnabled(True)
 
+    def is_confirm(self, ope: str):
+        """
+        文件覆盖确认弹窗
+        """
+        dic = {
+            "encode": ("加密", "已存在同名加密后文件，您确定要覆盖吗？"),
+            "decode": ("解密", "已存在同名解密后文件，您确定要覆盖吗？")
+        }
+        title = dic[ope][0]
+        text = dic[ope][1]
+        reply = QMessageBox.question(
+            self, title, text, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            return True
+        return False
+
     def encode(self):
         '''
         “加密”按钮的事件
         '''
+        # 数据更新
+        self.dst = self.src[:-3] + "hlx"
+        # 检查
+        if os.path.exists(self.dst):
+            if not self.is_confirm("encode"):
+                return
+        password = self.lineEdit_2.text()
         # 界面更新
         self.button_lock()
         self.statusLabel.setText("   加密中，请等待...   ")
-        # 数据更新
-        self.dst = self.src[:-3] + "hlx"
-        password = self.lineEdit_2.text()
         # 运行
         self.progress_value = 0
         timer.start(1000, self)
@@ -173,12 +194,16 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         '''
         “解密”按钮的事件
         '''
+        # 数据更新
+        self.dst = self.src[:-3] + "mp4"
+        # 检查
+        if os.path.exists(self.dst):
+            if not self.is_confirm("decode"):
+                return
+        password = self.lineEdit_2.text()
         # 界面更新
         self.button_lock()
         self.statusLabel.setText("   解密中，请等待...   ")
-        # 数据更新
-        self.dst = self.src[:-3] + "mp4"
-        password = self.lineEdit_2.text()
         # 运行
         self.progress_value = 0
         timer.start(1000, self)
