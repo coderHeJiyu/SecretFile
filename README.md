@@ -1,5 +1,7 @@
 # SecretFile
 
+[![Security Status](https://www.murphysec.com/platform3/v3/badge/1609435820142284800.svg)](https://www.murphysec.com/accept?code=f3d8e1c7c90a6637b6d49dd139d70a5f&type=1&from=2&t=2)
+
 一款简单的加密工具
 
 **2023-01-04**  v1.1
