@@ -53,7 +53,8 @@ class Coder:
         decryptor = cipher.decryptor()
         decrypt_data = decryptor.update(data)
         unpadder = padding.PKCS7(self.__block_size).unpadder()
-        unpad_decrypt_data = unpadder.update(decrypt_data) + unpadder.finalize()
+        unpad_decrypt_data = unpadder.update(
+            decrypt_data) + unpadder.finalize()
         return unpad_decrypt_data
 
     # 加密
@@ -69,8 +70,8 @@ class Coder:
         for i, line in enumerate(lines):
             temp = self.__aes_encrypt(key, line)
             file2.write(temp + "\n".encode("utf-8"))
-            self.progress = i * 100 / length
-            # print(self.progress)
+            self.progress = i * 100 // length
+            self.progress_change()
         file1.close()
         file2.close()
 
@@ -88,8 +89,8 @@ class Coder:
             for i, line in enumerate(lines):
                 temp = self.__aes_decrypt(key, line)
                 file2.write(temp)
-                self.progress = i * 100 / length
-                # print(self.progress)
+                self.progress = i * 100 // length
+                self.progress_change()
         except ValueError:
             print(ValueError)
             file1.close()
