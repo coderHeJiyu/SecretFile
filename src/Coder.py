@@ -67,7 +67,7 @@ class Coder:
         file1 = open(source, 'rb')
         file2 = open(save, 'wb')
         lines = file1.readlines()
-        self.length = len(lines)
+        self.length = len(lines)-1
         self.set_length()
         for i, line in enumerate(lines):
             temp = self.__aes_encrypt(key, line)
@@ -87,7 +87,7 @@ class Coder:
         file2 = open(result, 'wb')
         try:
             lines = file1.readlines()
-            self.length = len(lines)
+            self.length = len(lines)-1
             self.set_length()
             for i, line in enumerate(lines):
                 temp = self.__aes_decrypt(key, line)

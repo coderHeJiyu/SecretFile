@@ -24,7 +24,7 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         '''
         self.progressBar = QtWidgets.QProgressBar()
         self.progressBar.setRange(0, 100)
-        self.progressBar.setValue(0)
+        self.progressBar.reset()
         self.statusBar.addPermanentWidget(self.progressBar, stretch=4)
         self.statusLabel = QtWidgets.QLabel()
         self.statusLabel.setMaximumWidth(140)
@@ -54,7 +54,7 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             return
         # 界面更新
         self.button_lock()
-        self.progressBar.setValue(0)
+        self.progressBar.reset()
         # 数据更新
         self.src = event.mimeData().urls()[0].toLocalFile()
         # 界面更新(分支处理)
@@ -96,7 +96,7 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             return
         # 界面更新
         self.button_lock()
-        self.progressBar.setValue(0)
+        self.progressBar.reset()
         self.statusLabel.setText("   等待文件输入...   ")
         # 数据更新(依托于文件选择器)
         self.src, type = QFileDialog.getOpenFileName(
@@ -155,7 +155,6 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         '''
         self.run_state = False
         if is_done:
-            self.progressBar.setValue(100)
             self.statusLabel.setText("    加密成功 !!!   ")
         else:
             self.statusLabel.setText("    加密失败 !!!   ")
@@ -185,7 +184,6 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         '''
         self.run_state = False
         if is_done:
-            self.progressBar.setValue(100)
             self.statusLabel.setText("    解密成功 !!!   ")
         else:
             self.statusLabel.setText("    密码错误 !!!   ")
