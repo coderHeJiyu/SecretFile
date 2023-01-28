@@ -11,6 +11,7 @@ class Coder:
         """
         加解密器，self.prpgress是当前进度，是一个从0-100的数字
         """
+        self.length = 0
         self.progress = 0
         self.__block_size = 128
 
@@ -66,11 +67,12 @@ class Coder:
         file1 = open(source, 'rb')
         file2 = open(save, 'wb')
         lines = file1.readlines()
-        length = len(lines)
+        self.length = len(lines)
+        self.set_length()
         for i, line in enumerate(lines):
             temp = self.__aes_encrypt(key, line)
             file2.write(temp + "\n".encode("utf-8"))
-            self.progress = i * 100 // length
+            self.progress = i
             self.progress_change()
         file1.close()
         file2.close()
@@ -85,11 +87,12 @@ class Coder:
         file2 = open(result, 'wb')
         try:
             lines = file1.readlines()
-            length = len(lines)
+            self.length = len(lines)
+            self.set_length()
             for i, line in enumerate(lines):
                 temp = self.__aes_decrypt(key, line)
                 file2.write(temp)
-                self.progress = i * 100 // length
+                self.progress = i
                 self.progress_change()
         except ValueError:
             print(ValueError)
@@ -108,6 +111,10 @@ class Coder:
 
     @abstractmethod
     def progress_change(self):
+        pass
+
+    @abstractmethod
+    def set_length(self):
         pass
 
 

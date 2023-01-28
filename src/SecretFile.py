@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets, QtGui
 import sys
 from Threads import *
 from mainWindow import Ui_MainWindow
+from PyQt5.QtCore import Qt
 
 
 class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
@@ -26,6 +27,9 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         self.progressBar.setValue(0)
         self.statusBar.addPermanentWidget(self.progressBar, stretch=4)
         self.statusLabel = QtWidgets.QLabel()
+        self.statusLabel.setMaximumWidth(140)
+        self.statusLabel.setMinimumWidth(140)
+        self.statusLabel.setAlignment(Qt.AlignCenter)
         self.statusLabel.setText("   等待文件输入...   ")
         self.statusBar.addPermanentWidget(self.statusLabel, stretch=1)
         self.setAcceptDrops(True)
@@ -36,8 +40,10 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         """
         self.encode_thread.sig.connect(self.encode_feedback)
         self.encode_thread.progress_sig.connect(self.progress_updata)
+        self.encode_thread.length_sig.connect(self.progress_set)
         self.decode_thread.sig.connect(self.decode_feedback)
         self.decode_thread.progress_sig.connect(self.progress_updata)
+        self.decode_thread.length_sig.connect(self.progress_set)
 
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent):
         '''
@@ -61,6 +67,12 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
                 self.pushButton_2.setEnabled(True)
             else:
                 self.statusLabel.setText("   不支持的文件格式!   ")
+
+    def progress_set(self, value: int):
+        '''
+        进度条最大值设置
+        '''
+        self.progressBar.setMaximum(value)
 
     def progress_updata(self, value: int):
         '''
