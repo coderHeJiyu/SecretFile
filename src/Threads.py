@@ -1,5 +1,4 @@
 from PyQt5.QtCore import QThread, pyqtSignal
-
 from Coder import Coder
 
 

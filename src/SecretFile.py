@@ -1,10 +1,8 @@
 import os
 import sys
-
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QDragEnterEvent
 from PyQt5.QtWidgets import *
-
 from Threads import EncodeThread, DecodeThread
 from mainWindow import Ui_MainWindow
 
