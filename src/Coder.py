@@ -1,5 +1,5 @@
 import os
-from typing import IO
+from typing import BinaryIO
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
@@ -68,9 +68,9 @@ class Coder:
         # name = os.path.basename(source).split('.')[0]
         save += ".hlx"
         key = self.__adjust(key)
-        file1 = open(source, 'rb')
-        file2 = open(save, 'wb')
-        file2.write((f"#suffix={suffix}\n").encode("utf-8"))
+        file1: BinaryIO = open(source, 'rb')
+        file2: BinaryIO = open(save, 'wb')
+        file2.write(f"#suffix={suffix}\n".encode("utf-8"))
         lines = file1.readlines()
         self.length = len(lines) - 1
         self.set_length()
@@ -88,17 +88,18 @@ class Coder:
         解密，参数为(待解密文件路径，结果路径，密钥)
         """
         key = self.__adjust(key)
-        file1 = open(save, 'rb')
+        file1: BinaryIO = open(save, 'rb')
         suffix: str = file1.readline().decode("utf-8").replace("\n", "")
         if "#suffix=" not in suffix:
-            suffix= ".mp4"  # 默认的解密类型，兼容旧版本.hlx文件
+            suffix = ".mp4"  # 默认的解密类型，兼容旧版本.hlx文件
+            file1.seek(0)
         else:
             suffix = suffix.split("#suffix=")[-1]
         # 防止文件被覆盖
-        while os.path.exists(result+suffix):
-            result+="(1)"
-        result+=suffix
-        file2 = open(result, 'wb')
+        while os.path.exists(result + suffix):
+            result += "(1)"
+        result += suffix
+        file2: BinaryIO = open(result, 'wb')
         try:
             lines = file1.readlines()
             self.length = len(lines) - 1
