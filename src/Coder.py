@@ -1,4 +1,5 @@
 import os
+from typing import IO
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
@@ -9,7 +10,7 @@ from abc import abstractmethod
 class Coder:
     def __init__(self):
         """
-        加解密器，self.prpgress是当前进度，是一个从0-100的数字
+        加解密器，self.progress是当前进度，是一个从0-100的数字
         """
         self.length = 0
         self.progress = 0
@@ -64,12 +65,12 @@ class Coder:
         加密，参数为(待加密文件路径，结果路径，密钥)
         """
         suffix = os.path.splitext(source)[-1]
-        name = os.path.basename(source).split('.')[0]
-        save = os.path.join(save, f"{name}.hlx")
+        # name = os.path.basename(source).split('.')[0]
+        save += ".hlx"
         key = self.__adjust(key)
         file1 = open(source, 'rb')
         file2 = open(save, 'wb')
-        file2.write((suffix + "\n").encode("utf-8"))
+        file2.write((f"#suffix={suffix}\n").encode("utf-8"))
         lines = file1.readlines()
         self.length = len(lines) - 1
         self.set_length()
@@ -88,10 +89,15 @@ class Coder:
         """
         key = self.__adjust(key)
         file1 = open(save, 'rb')
-        name = os.path.basename(save).split('.')[0]
-        suffix = file1.readline().decode("utf-8").replace("\n", "")
-        result = os.path.join(result, f"{name}{suffix}")
-        # print(suffix)
+        suffix: str = file1.readline().decode("utf-8").replace("\n", "")
+        if "#suffix=" not in suffix:
+            suffix= ".mp4"  # 默认的解密类型，兼容旧版本.hlx文件
+        else:
+            suffix = suffix.split("#suffix=")[-1]
+        # 防止文件被覆盖
+        while os.path.exists(result+suffix):
+            result+="(1)"
+        result+=suffix
         file2 = open(result, 'wb')
         try:
             lines = file1.readlines()
@@ -128,9 +134,9 @@ class Coder:
 
 if __name__ == '__main__':
     coder = Coder()
-    file1 = "../"
-    file2 = "../password = 666.hlx"
-    coder.decode(file2, file1, "6666")
+    # file1 = "../"
+    # file2 = "../password = 666.hlx"
+    # coder.decode(file2, file1, "6666")
     # name = os.path.basename(file1)
     # print(name)
     # coder.decode(file1, file2, "666")

@@ -1,10 +1,6 @@
-import os
-from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QThread, QBasicTimer, pyqtSignal
-import sys
+from PyQt5.QtCore import QThread, pyqtSignal
+
 from Coder import Coder
-from mainWindow import Ui_MainWindow
 
 
 class EncodeThread(QThread, Coder):

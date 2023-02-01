@@ -1,32 +1,35 @@
 import os
-from PyQt5 import QtWidgets, QtGui
-# from PyQt5.QtWidgets import *
 import sys
-from Threads import *
-from mainWindow import Ui_MainWindow
+
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QDragEnterEvent
+from PyQt5.QtWidgets import *
+
+from Threads import EncodeThread, DecodeThread
+from mainWindow import Ui_MainWindow
 
 
-class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
-
+class MainWindow(Ui_MainWindow, QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self.setupUi(self)
+        self.progressBar = QProgressBar()
+        self.statusLabel = QLabel()
         self.set_more_ui()
         self.encode_thread = EncodeThread()
         self.decode_thread = DecodeThread()
+        self.src = None
+        self.dst = None
         self.run_state = False
         self.set_threads()
 
     def set_more_ui(self):
-        '''
+        """
         手写部分UI
-        '''
-        self.progressBar = QtWidgets.QProgressBar()
+        """
         self.progressBar.setRange(0, 100)
         self.progressBar.reset()
         self.statusBar.addPermanentWidget(self.progressBar, stretch=4)
-        self.statusLabel = QtWidgets.QLabel()
         self.statusLabel.setMaximumWidth(140)
         self.statusLabel.setMinimumWidth(140)
         self.statusLabel.setAlignment(Qt.AlignCenter)
@@ -39,16 +42,16 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         设置线程
         """
         self.encode_thread.sig.connect(self.encode_feedback)
-        self.encode_thread.progress_sig.connect(self.progress_updata)
+        self.encode_thread.progress_sig.connect(self.progress_update)
         self.encode_thread.length_sig.connect(self.progress_set)
         self.decode_thread.sig.connect(self.decode_feedback)
-        self.decode_thread.progress_sig.connect(self.progress_updata)
+        self.decode_thread.progress_sig.connect(self.progress_update)
         self.decode_thread.length_sig.connect(self.progress_set)
 
-    def dragEnterEvent(self, event: QtGui.QDragEnterEvent):
-        '''
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        """
         @override 拖入事件
-        '''
+        """
         # 防冲突
         if self.run_state:
             return
@@ -63,34 +66,32 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             self.lineEdit.setText(self.src)
             if self.src.endswith(".hlx"):
                 self.pushButton_3.setEnabled(True)
-            elif self.src.endswith(".mp4"):
-                self.pushButton_2.setEnabled(True)
             else:
-                self.statusLabel.setText("   不支持的文件格式!   ")
+                self.pushButton_2.setEnabled(True)
 
     def progress_set(self, value: int):
-        '''
+        """
         进度条最大值设置
-        '''
+        """
         self.progressBar.setMaximum(value)
 
-    def progress_updata(self, value: int):
-        '''
+    def progress_update(self, value: int):
+        """
         进度条更新
-        '''
+        """
         self.progressBar.setValue(value)
 
     def button_lock(self):
-        '''
+        """
         锁定“加密”和“解密”按钮
-        '''
+        """
         self.pushButton_2.setEnabled(False)
         self.pushButton_3.setEnabled(False)
 
     def open_file(self):
-        '''
+        """
         “打开”按钮的事件
-        '''
+        """
         # 防冲突
         if self.run_state:
             return
@@ -99,18 +100,18 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         self.progressBar.reset()
         self.statusLabel.setText("   等待文件输入...   ")
         # 数据更新(依托于文件选择器)
-        self.src, _ = QFileDialog.getOpenFileName(
+        self.src, file_type = QFileDialog.getOpenFileName(
             None,
             "打开文件",
             "./",
-            # ".hlx文件(*.hlx);;mp4文件(*.mp4)"
+            ".hlx文件(*.hlx);;全部文件(*.*)"
         )
         # 界面更新(分支处理)
         self.lineEdit.setText(self.src)
         if self.src is not None and len(self.src) != 0:
             self.statusLabel.setText("   文件打开成功!!!   ")
-            type = os.path.splitext(self.src)[-1]
-            if type == ".hlx":
+            file_type = os.path.splitext(self.src)[-1]
+            if file_type == ".hlx文件(*.hlx)":
                 self.pushButton_3.setEnabled(True)
             else:
                 self.pushButton_2.setEnabled(True)
@@ -132,13 +133,13 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         return False
 
     def encode(self):
-        '''
+        """
         “加密”按钮的事件
-        '''
+        """
         # 数据更新
-        self.dst = os.path.dirname(os.path.abspath(self.src))
+        self.dst, _ = os.path.splitext(self.src)
         # 检查
-        if os.path.exists(self.dst):
+        if os.path.exists(self.dst + ".hlx"):
             if not self.is_confirm("encode"):
                 return
         password = self.lineEdit_2.text()
@@ -151,9 +152,9 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         self.encode_thread.start()
 
     def encode_feedback(self, is_done):
-        '''
+        """
         加密结果反馈
-        '''
+        """
         self.run_state = False
         if is_done:
             self.statusLabel.setText("    加密成功 !!!   ")
@@ -161,15 +162,15 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             self.statusLabel.setText("    加密失败 !!!   ")
 
     def decode(self):
-        '''
+        """
         “解密”按钮的事件
-        '''
+        """
         # 数据更新
-        self.dst = os.path.dirname(os.path.abspath(self.src))
-        # 检查
-        if os.path.exists(self.dst):
-            if not self.is_confirm("decode"):
-                return
+        self.dst, _ = os.path.splitext(self.src)
+        # # 检查
+        # if os.path.exists(self.dst):
+        #     if not self.is_confirm("decode"):
+        #         return
         password = self.lineEdit_2.text()
         # 界面更新
         self.button_lock()
@@ -180,9 +181,9 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         self.decode_thread.start()
 
     def decode_feedback(self, is_done):
-        '''
+        """
         解密结果反馈
-        '''
+        """
         self.run_state = False
         if is_done:
             self.statusLabel.setText("    解密成功 !!!   ")
@@ -192,7 +193,7 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     # 开始
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     # 窗口
     main_window = MainWindow()
     main_window.show()
