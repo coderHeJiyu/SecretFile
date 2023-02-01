@@ -100,21 +100,22 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.progressBar.reset()
         self.statusLabel.setText("   等待文件输入...   ")
         # 数据更新(依托于文件选择器)
-        self.src, file_type = QFileDialog.getOpenFileName(
+        self.src, _ = QFileDialog.getOpenFileName(
             None,
             "打开文件",
             "./",
-            ".hlx文件(*.hlx);;全部文件(*.*)"
+            "全部文件(*.*)"
         )
         # 界面更新(分支处理)
         self.lineEdit.setText(self.src)
         if self.src is not None and len(self.src) != 0:
             self.statusLabel.setText("   文件打开成功!!!   ")
             file_type = os.path.splitext(self.src)[-1]
-            if file_type == ".hlx文件(*.hlx)":
-                self.pushButton_3.setEnabled(True)
+            if file_type != ".hlx":
+                self.pushButton_2.setEnabled(True)
             else:
                 self.pushButton_2.setEnabled(True)
+                self.pushButton_3.setEnabled(True)
 
     def is_confirm(self, ope: str):
         """

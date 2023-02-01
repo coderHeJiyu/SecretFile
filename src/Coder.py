@@ -66,11 +66,15 @@ class Coder:
         """
         suffix = os.path.splitext(source)[-1]
         # name = os.path.basename(source).split('.')[0]
+        while os.path.exists(save + ".hlx"):
+            save += "(1)"
         save += ".hlx"
         key = self.__adjust(key)
         file1: BinaryIO = open(source, 'rb')
         file2: BinaryIO = open(save, 'wb')
-        file2.write(f"#suffix={suffix}\n".encode("utf-8"))
+        suffix = f"#suffix={suffix}".encode("utf-8")
+        suffix = self.__aes_encrypt(key, suffix)
+        file2.write(suffix + "\n".encode("utf-8"))
         lines = file1.readlines()
         self.length = len(lines) - 1
         self.set_length()
@@ -89,8 +93,12 @@ class Coder:
         """
         key = self.__adjust(key)
         file1: BinaryIO = open(save, 'rb')
-        suffix: str = file1.readline().decode("utf-8").replace("\n", "")
-        if "#suffix=" not in suffix:
+        try:
+            suffix: str = self.__aes_decrypt(key, file1.readline()
+                                             .decode("utf-8")
+                                             .replace("\n", "")
+                                             .encode("utf-8")).decode("utf-8")
+        except:
             suffix = ".mp4"  # 默认的解密类型，兼容旧版本.hlx文件
             file1.seek(0)
         else:
