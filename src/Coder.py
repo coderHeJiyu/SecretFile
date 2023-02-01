@@ -63,11 +63,15 @@ class Coder:
         """
         加密，参数为(待加密文件路径，结果路径，密钥)
         """
+        suffix = os.path.splitext(source)[-1]
+        name = os.path.basename(source).split('.')[0]
+        save = os.path.join(save, f"{name}.hlx")
         key = self.__adjust(key)
         file1 = open(source, 'rb')
         file2 = open(save, 'wb')
+        file2.write((suffix + "\n").encode("utf-8"))
         lines = file1.readlines()
-        self.length = len(lines)-1
+        self.length = len(lines) - 1
         self.set_length()
         for i, line in enumerate(lines):
             temp = self.__aes_encrypt(key, line)
@@ -84,10 +88,14 @@ class Coder:
         """
         key = self.__adjust(key)
         file1 = open(save, 'rb')
+        name = os.path.basename(save).split('.')[0]
+        suffix = file1.readline().decode("utf-8").replace("\n", "")
+        result = os.path.join(result, f"{name}{suffix}")
+        # print(suffix)
         file2 = open(result, 'wb')
         try:
             lines = file1.readlines()
-            self.length = len(lines)-1
+            self.length = len(lines) - 1
             self.set_length()
             for i, line in enumerate(lines):
                 temp = self.__aes_decrypt(key, line)
@@ -120,6 +128,9 @@ class Coder:
 
 if __name__ == '__main__':
     coder = Coder()
-    file1 = "../password = 666.hlx"
-    file2 = "../password = 666.mp4"
-    coder.decode(file1, file2, "666")
+    file1 = "../"
+    file2 = "../password = 666.hlx"
+    coder.decode(file2, file1, "6666")
+    # name = os.path.basename(file1)
+    # print(name)
+    # coder.decode(file1, file2, "666")

@@ -103,7 +103,7 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             None,
             "打开文件",
             "./",
-            ".hlx文件(*.hlx);;mp4文件(*.mp4)"
+            # ".hlx文件(*.hlx);;mp4文件(*.mp4)"
         )
         # 界面更新(分支处理)
         self.lineEdit.setText(self.src)
@@ -135,7 +135,7 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         “加密”按钮的事件
         '''
         # 数据更新
-        self.dst = self.src[:-3] + "hlx"
+        self.dst = os.path.dirname(os.path.abspath(self.src))
         # 检查
         if os.path.exists(self.dst):
             if not self.is_confirm("encode"):
@@ -164,7 +164,7 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         “解密”按钮的事件
         '''
         # 数据更新
-        self.dst = self.src[:-3] + "mp4"
+        self.dst = os.path.dirname(os.path.abspath(self.src))
         # 检查
         if os.path.exists(self.dst):
             if not self.is_confirm("decode"):
