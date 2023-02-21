@@ -115,14 +115,21 @@ class Coder:
         result += suffix
         file2: BinaryIO = open(result, 'wb')
         try:
-            lines = file1.readlines()
-            self.length = len(lines) - 1
+            self.length = -1
+            with open(save, 'rb') as f:
+                for line in f:
+                    self.length = self.length + 1
+                    # print(self.length)
             self.set_length()
-            for i, line in enumerate(lines):
-                temp = self.__aes_decrypt(key, line)
-                file2.write(temp)
-                self.progress = i
-                self.progress_change()
+            bar = 0
+            with open(save, 'rb') as lines:
+                for i, line in enumerate(lines):
+                    temp = self.__aes_decrypt(key, line)
+                    file2.write(temp)
+                    self.progress = i
+                    if bar != i * 100 // self.length:
+                        bar = i * 100 // self.length
+                        self.progress_change()
         except ValueError:
             print(ValueError)
             file1.close()
