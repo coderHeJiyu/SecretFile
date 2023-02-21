@@ -24,6 +24,7 @@ class EncodeThread(QThread, Coder):
     def set_length(self):
         self.length_sig.emit(self.length)
 
+
     def run(self):
         self.encode(self.src, self.dst, self.password)
         self.sig.emit(True)

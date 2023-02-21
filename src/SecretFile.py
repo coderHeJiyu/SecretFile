@@ -71,6 +71,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         """
         进度条最大值设置
         """
+        self.statusLabel.setText("加密中，请等待...   ")
         self.progressBar.setMaximum(value)
 
     def progress_update(self, value: int):
@@ -144,7 +145,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         password = self.lineEdit_2.text()
         # 界面更新
         self.button_lock()
-        self.statusLabel.setText("   加密中，请等待...   ")
+        self.statusLabel.setText("正在计算文件大小...")
         # 运行
         self.run_state = True
         self.encode_thread.set_data(self.src, self.dst, password)

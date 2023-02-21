@@ -70,20 +70,26 @@ class Coder:
             save += "(1)"
         save += ".hlx"
         key = self.__adjust(key)
-        file1: BinaryIO = open(source, 'rb')
+        self.length = -1
+        with open(source, 'rb') as f:
+            for line in f:
+                self.length = self.length + 1
+                # print(self.length)
+        self.set_length()
         file2: BinaryIO = open(save, 'wb')
         suffix = f"#suffix={suffix}".encode("utf-8")
         suffix = self.__aes_encrypt(key, suffix)
         file2.write(suffix + "\n".encode("utf-8"))
-        lines = file1.readlines()
-        self.length = len(lines) - 1
-        self.set_length()
-        for i, line in enumerate(lines):
-            temp = self.__aes_encrypt(key, line)
-            file2.write(temp + "\n".encode("utf-8"))
-            self.progress = i
-            self.progress_change()
-        file1.close()
+        bar = 0
+        self.progress_change()
+        with open(source, 'rb') as lines:
+            for i, line in enumerate(lines):
+                temp = self.__aes_encrypt(key, line)
+                file2.write(temp + "\n".encode("utf-8"))
+                self.progress = i
+                if bar != i*100//self.length:
+                    bar = i*100//self.length
+                    self.progress_change()
         file2.close()
 
     # 解密
