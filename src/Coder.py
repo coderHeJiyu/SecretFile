@@ -74,7 +74,7 @@ class Coder:
         with open(source, 'rb') as f:
             for line in f:
                 self.length = self.length + 1
-                # print(self.length)
+        self.count_done()
         file2: BinaryIO = open(save, 'wb')
         suffix = f"#suffix={suffix}".encode("utf-8")
         suffix = self.__aes_encrypt(key, suffix)
@@ -85,8 +85,8 @@ class Coder:
             for i, line in enumerate(lines):
                 temp = self.__aes_encrypt(key, line)
                 file2.write(temp + "\n".encode("utf-8"))
-                if self.progress != i*100//self.length:
-                    self.progress = i*100//self.length
+                if self.progress != i * 100 // self.length:
+                    self.progress = i * 100 // self.length
                     self.progress_change()
         file2.close()
 
@@ -117,8 +117,9 @@ class Coder:
             with open(save, 'rb') as f:
                 for line in f:
                     self.length = self.length + 1
-                    # print(self.length)
+            self.count_done()
             self.progress = 0
+            self.progress_change()
             with open(save, 'rb') as lines:
                 for i, line in enumerate(lines):
                     temp = self.__aes_decrypt(key, line)
@@ -148,6 +149,7 @@ class Coder:
     @abstractmethod
     def count_done(self):
         pass
+
 
 if __name__ == '__main__':
     coder = Coder()
