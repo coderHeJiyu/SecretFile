@@ -41,10 +41,10 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         """
         self.encode_thread.sig.connect(self.encode_feedback)
         self.encode_thread.progress_sig.connect(self.progress_update)
-        self.encode_thread.length_sig.connect(self.progress_set)
+        self.encode_thread.status_sig.connect(self.statusLabel.setText)
         self.decode_thread.sig.connect(self.decode_feedback)
         self.decode_thread.progress_sig.connect(self.progress_update)
-        self.decode_thread.length_sig.connect(self.progress_set)
+        self.decode_thread.status_sig.connect(self.statusLabel.setText)
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         """
@@ -66,13 +66,6 @@ class MainWindow(Ui_MainWindow, QMainWindow):
                 self.pushButton_3.setEnabled(True)
             else:
                 self.pushButton_2.setEnabled(True)
-
-    def progress_set(self, value: int):
-        """
-        进度条最大值设置
-        """
-        self.statusLabel.setText("加密中，请等待...   ")
-        self.progressBar.setMaximum(value)
 
     def progress_update(self, value: int):
         """
@@ -174,7 +167,6 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         password = self.lineEdit_2.text()
         # 界面更新
         self.button_lock()
-        self.statusLabel.setText("   解密中，请等待...   ")
         # 运行
         self.run_state = True
         self.decode_thread.set_data(self.src, self.dst, password)

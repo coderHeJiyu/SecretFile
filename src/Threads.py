@@ -5,7 +5,7 @@ from Coder import Coder
 class EncodeThread(QThread, Coder):
     sig = pyqtSignal(bool)
     progress_sig = pyqtSignal(int)
-    length_sig = pyqtSignal(int)
+    status_sig = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(EncodeThread, self).__init__(parent)
@@ -21,8 +21,8 @@ class EncodeThread(QThread, Coder):
     def progress_change(self):
         self.progress_sig.emit(self.progress)
 
-    def set_length(self):
-        self.length_sig.emit(self.length)
+    def count_done(self):
+        self.status_sig.emit("   加密中，请等待...   ")
 
 
     def run(self):
@@ -33,7 +33,7 @@ class EncodeThread(QThread, Coder):
 class DecodeThread(QThread, Coder):
     sig = pyqtSignal(bool)
     progress_sig = pyqtSignal(int)
-    length_sig = pyqtSignal(int)
+    status_sig = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(DecodeThread, self).__init__(parent)
@@ -49,8 +49,8 @@ class DecodeThread(QThread, Coder):
     def progress_change(self):
         self.progress_sig.emit(self.progress)
 
-    def set_length(self):
-        self.length_sig.emit(self.length)
+    def count_done(self):
+        self.status_sig.emit("   解密中，请等待...   ")
 
     def run(self):
         if not self.decode(self.src, self.dst, self.password):
