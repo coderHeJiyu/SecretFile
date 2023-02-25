@@ -75,20 +75,18 @@ class Coder:
             for line in f:
                 self.length = self.length + 1
                 # print(self.length)
-        self.set_length()
         file2: BinaryIO = open(save, 'wb')
         suffix = f"#suffix={suffix}".encode("utf-8")
         suffix = self.__aes_encrypt(key, suffix)
         file2.write(suffix + "\n".encode("utf-8"))
-        bar = 0
+        self.progress = 0
         self.progress_change()
         with open(source, 'rb') as lines:
             for i, line in enumerate(lines):
                 temp = self.__aes_encrypt(key, line)
                 file2.write(temp + "\n".encode("utf-8"))
-                self.progress = i
-                if bar != i*100//self.length:
-                    bar = i*100//self.length
+                if self.progress != i*100//self.length:
+                    self.progress = i*100//self.length
                     self.progress_change()
         file2.close()
 
@@ -120,15 +118,13 @@ class Coder:
                 for line in f:
                     self.length = self.length + 1
                     # print(self.length)
-            self.set_length()
-            bar = 0
+            self.progress = 0
             with open(save, 'rb') as lines:
                 for i, line in enumerate(lines):
                     temp = self.__aes_decrypt(key, line)
                     file2.write(temp)
-                    self.progress = i
-                    if bar != i * 100 // self.length:
-                        bar = i * 100 // self.length
+                    if self.progress != i * 100 // self.length:
+                        self.progress = i * 100 // self.length
                         self.progress_change()
         except ValueError:
             print(ValueError)
@@ -150,9 +146,8 @@ class Coder:
         pass
 
     @abstractmethod
-    def set_length(self):
+    def count_done(self):
         pass
-
 
 if __name__ == '__main__':
     coder = Coder()
