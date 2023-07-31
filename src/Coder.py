@@ -59,84 +59,113 @@ class Coder:
             decrypt_data) + unpadder.finalize()
         return unpad_decrypt_data
 
-    # 加密
-    def encode(self, source, save, key):
+    def __safe_output(self, dst_path, suffix):
         """
-        加密，参数为(待加密文件路径，结果路径，密钥)
+        生成安全的结果路径，防止文件被覆盖
+        :param dst_path: 结果存放的路径（不包含后缀）
+        :param suffix: 后缀名
         """
-        suffix = os.path.splitext(source)[-1]
-        # name = os.path.basename(source).split('.')[0]
-        while os.path.exists(save + ".hlx"):
-            save += "(1)"
-        save += ".hlx"
-        key = self.__adjust(key)
-        self.length = -1
-        with open(source, 'rb') as f:
-            for line in f:
-                self.length = self.length + 1
-        self.count_done()
-        file2: BinaryIO = open(save, 'wb')
-        suffix = f"#suffix={suffix}".encode("utf-8")
-        suffix = self.__aes_encrypt(key, suffix)
-        file2.write(suffix + "\n".encode("utf-8"))
-        self.progress = 0
-        self.progress_change()
-        with open(source, 'rb') as lines:
-            for i, line in enumerate(lines):
-                temp = self.__aes_encrypt(key, line)
-                file2.write(temp + "\n".encode("utf-8"))
-                if self.progress != i * 100 // self.length:
-                    self.progress = i * 100 // self.length
-                    self.progress_change()
-        file2.close()
+        if os.path.exists(dst_path + suffix):
+            __count = 1
+            while os.path.exists(dst_path + f"({__count})" + suffix):
+                __count += 1
+            dst_path += f"({__count})"
+        return dst_path + suffix
 
-    # 解密
-    def decode(self, save, result, key):
+    def encode(self, src_path, dst_path, key):
         """
-        解密，参数为(待解密文件路径，结果路径，密钥)
+        加密文件
+        :param src_path: 待加密文件路径
+        :param dst_path: 结果存放的路径（不包含后缀）
+        :param key: 密钥
         """
-        key = self.__adjust(key)
-        file1: BinaryIO = open(save, 'rb')
-        try:
-            suffix: str = self.__aes_decrypt(key, file1.readline()
-                                             .decode("utf-8")
-                                             .replace("\n", "")
-                                             .encode("utf-8")).decode("utf-8")
-        except:
-            suffix = ".mp4"  # 默认的解密类型，兼容旧版本.hlx文件
-            file1.seek(0)
-        else:
-            suffix = suffix.split("#suffix=")[-1]
-        # 防止文件被覆盖
-        while os.path.exists(result + suffix):
-            result += "(1)"
-        result += suffix
-        file2: BinaryIO = open(result, 'wb')
-        try:
+        # 打开待加密文件
+        with open(src_path, 'rb') as __src_file:
+            # 计算文件行数
             self.length = -1
-            with open(save, 'rb') as f:
-                for line in f:
-                    self.length = self.length + 1
+            for line in __src_file:
+                self.length = self.length + 1
+            #计算完成
             self.count_done()
-            self.progress = 0
-            self.progress_change()
-            with open(save, 'rb') as lines:
-                for i, line in enumerate(lines):
-                    temp = self.__aes_decrypt(key, line)
-                    file2.write(temp)
+            __src_file.seek(0)
+            # 打开输出文件
+            dst_path = self.__safe_output(dst_path, ".hlx")
+            key = self.__adjust(key)
+            with open(dst_path, 'wb') as __dst_file:
+                # 写入源文件后缀
+                __suffix = os.path.splitext(src_path)[-1]
+                __suffix = f"#suffix={__suffix}".encode("utf-8")
+                __suffix = self.__aes_encrypt(key, __suffix)
+                __dst_file.write(__suffix + "\n".encode("utf-8"))
+                # 进度条归零
+                self.progress = 0
+                self.progress_change()
+                # 逐行加密
+                for i, line in enumerate(__src_file):
+                    __temp = self.__aes_encrypt(key, line)
+                    __dst_file.write(__temp + "\n".encode("utf-8"))
                     if self.progress != i * 100 // self.length:
                         self.progress = i * 100 // self.length
                         self.progress_change()
-        except ValueError:
-            print(ValueError)
-            file1.close()
-            file2.close()
-            os.remove(result)
-            return False
-        else:
-            file1.close()
-            file2.close()
-            return True
+                # 加密完成
+                __src_file.close()
+                __dst_file.close()
+
+    # 解密
+    def decode(self, src_path, dst_path, key):
+        """
+        解密文件
+        :param src_path: 待解密文件路径
+        :param dst_path: 结果存放的路径（不包含后缀）
+        :param key: 密钥
+        """
+        key = self.__adjust(key)
+        # 打开待解密文件
+        with open(src_path, 'rb') as __src_file:
+            # 计算文件行数
+            self.length = -1
+            for line in __src_file:
+                self.length = self.length + 1
+            #计算完成
+            self.count_done()
+            __src_file.seek(0)
+            # 读取后缀
+            try:
+                __suffix: str = self.__aes_decrypt(key, __src_file.readline()
+                                                   .decode("utf-8")
+                                                   .replace("\n", "")
+                                                   .encode("utf-8")).decode("utf-8")
+            except ValueError:
+                # 默认的解密类型，兼容旧版本.hlx文件
+                __suffix = ".mp4"  
+                __src_file.seek(0)
+            else:
+                __suffix = __suffix.split("#suffix=")[-1]
+                self.length -= 1
+            # 打开输出文件
+            dst_path = self.__safe_output(dst_path, __suffix)
+            key = self.__adjust(key)
+            with open(dst_path, 'wb') as __dst_file:
+                try:
+                    # 进度条归零
+                    self.progress = 0
+                    self.progress_change()
+                    # 逐行解密
+                    for i, line in enumerate(__src_file):
+                        __temp = self.__aes_decrypt(key, line)
+                        __dst_file.write(__temp)
+                        if self.progress != i * 100 // self.length:
+                            self.progress = i * 100 // self.length
+                            self.progress_change()
+                except ValueError:
+                    print(ValueError)
+                    __src_file.close()
+                    __dst_file.close()
+                    os.remove(dst_path)
+                    return False
+                __src_file.close()
+                __dst_file.close()
+                return True
 
     def __adjust(self, key):
         n = 16 - len(key)
