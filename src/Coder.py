@@ -38,16 +38,13 @@ class Coder:
         # 加密数据
         encryptor = cipher.encryptor()
         encrypted_data = encryptor.update(pad_data)
-        # return base64.b64encode(encrypted_data)
-        # return encrypted_data
-        return encrypted_data.decode("utf-8").encode("utf-8")
+        return base64.b64encode(encrypted_data)
 
     def __aes_decrypt(self, secret_key, data):
         """解密数据
         """
         secret_key = secret_key.encode("utf-8")
-        # data = base64.b64decode(data)
-        data = data.decode("utf-8")
+        data = base64.b64decode(data)
 
         # 创建密码器
         cipher = Cipher(
@@ -107,7 +104,6 @@ class Coder:
                 for i, line in enumerate(__src_file):
                     __temp = self.__aes_encrypt(key, line)
                     __dst_file.write(__temp + "\n".encode("utf-8"))
-                    # __dst_file.write(__temp)
                     if self.progress != i * 100 // self.length:
                         self.progress = i * 100 // self.length
                         self.progress_change()
