@@ -1,8 +1,12 @@
 # SecretFile
 
-[![Security Status](https://www.murphysec.com/platform3/v3/badge/1609435820142284800.svg)](https://www.murphysec.com/accept?code=f3d8e1c7c90a6637b6d49dd139d70a5f&type=1&from=2&t=2)
-
 一款简单的加密工具
+
+**2023-10-11**  v2.0
+
+修改了加密解密的算法
+
+注意，该版本加密的文件无法与之前版本兼容
 
 **2023-02-25**  v1.4
 
